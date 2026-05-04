@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+{% block title %}Panduan Penggunaan{% endblock %}
+{% block breadcrumb %}Panduan Penggunaan{% endblock %}
+
+{% block content %}
+<div class="gs-page-header">
+  <div>
+    <h4><i class="ti ti-book me-2"></i>Panduan Penggunaan Aplikasi</h4>
+    <p>Ikuti alur penggunaan berikut agar aplikasi berjalan optimal — mulai dari dataset hingga prediksi</p>
+  </div>
+</div>
+
+<!-- ── Alur penggunaan overview ────────────────────────────────────── -->
+<div class="card gs-chart-card mb-3">
+  <div class="card-header">
+    <h6 class="mb-0 fw-600"><i class="ti ti-sitemap me-2 text-success"></i>Alur Penggunaan Aplikasi</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 text-center">
+      {% set steps = [
+        ('1','Dashboard','Lihat ringkasan statistik & tren ISPU Jakarta','ti-dashboard','#1fa97a','dashboard'),
+        ('2','Dataset ISPU','Eksplorasi data, filter, visualisasi korelasi polutan','ti-database','#2563eb','dataset'),
+        ('3','Upload Dataset','(Opsional) Gunakan dataset milikmu sendiri','ti-upload','#f59e0b','upload_dataset'),
+        ('4','Prediksi ISPU','Latih model ANN Backpropagation, lalu prediksi ISPU','ti-chart-dots','#7c3aed','prediksi'),
+        ('5','Evaluasi Model','Lihat metrik & kurva model yang sudah dilatih','ti-chart-bar','#ea580c','evaluasi'),
+        ('6','Tentang','Info teknologi, dataset, dan referensi','ti-info-circle','#64748b','tentang'),
+      ] %}
+      {% for num, title, desc, icon, color, route in steps %}
+      <div class="col-xl-2 col-md-4 col-6">
+        <a href="{{ url_for(route) }}" class="text-decoration-none">
+          <div class="p-3 rounded-3 h-100" style="background:{{ color }}10;border:2px solid {{ color }}30;transition:all .2s"
+               onmouseover="this.style.borderColor='{{ color }}';this.style.background='{{ color }}20'"
+               onmouseout="this.style.borderColor='{{ color }}30';this.style.background='{{ color }}10'">
+            <div class="d-flex align-items-center justify-content-center mb-2"
+                 style="width:48px;height:48px;border-radius:12px;background:{{ color }}20;margin:0 auto">
+              <i class="ti {{ icon }}" style="color:{{ color }};font-size:1.4rem"></i>
+            </div>
+            <div class="fw-700 mb-1" style="color:{{ color }};font-size:1.1rem">{{ num }}</div>
+            <div class="fw-600" style="font-size:.85rem;color:#1e293b">{{ title }}</div>
+            <div class="text-muted mt-1" style="font-size:.75rem">{{ desc }}</div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    <!-- Arrow flow -->
+    <div class="d-none d-xl-flex align-items-center justify-content-center gap-2 mt-3"
+         style="font-size:.8rem;color:#94a3b8">
+      <span>Dashboard</span>
+      <i class="ti ti-arrow-right"></i>
+      <span>Dataset</span>
+      <i class="ti ti-arrow-right"></i>
+      <span class="text-warning">(Upload opsional)</span>
+      <i class="ti ti-arrow-right"></i>
+      <span class="fw-600 text-success">Latih Model</span>
+      <i class="ti ti-arrow-right"></i>
+      <span class="fw-600 text-danger">Prediksi</span>
+      <i class="ti ti-arrow-right"></i>
+      <span class="fw-600" style="color:#ea580c">Evaluasi</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Step-by-step detail ─────────────────────────────────────────── -->
+<div class="row g-3 mb-3">
+
+  <!-- STEP 1 & 2 -->
+  <div class="col-md-6">
+    <div class="card gs-form-card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1fa97a;color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0">1</div>
+        <h6 class="mb-0 fw-600">Dashboard</h6>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-success ms-auto">Buka →</a>
+      </div>
+      <div class="card-body" style="font-size:.85rem">
+        <p class="text-muted mb-2">Halaman pertama yang muncul saat membuka aplikasi. Berisi:</p>
+        <ul class="mb-0" style="padding-left:1.2rem">
+          <li>Statistik ringkas: total record, stasiun, rata-rata ISPU, jumlah model</li>
+          <li>Tren ISPU bulanan 2010–2025</li>
+          <li>Distribusi kategori & rata-rata tahunan</li>
+          <li>Profil polutan 30 hari terakhir (radar chart)</li>
+          <li>Tombol cepat ke halaman Prediksi dan Dataset</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card gs-form-card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div style="width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0">2</div>
+        <h6 class="mb-0 fw-600">Dataset ISPU</h6>
+        <a href="{{ url_for('dataset') }}" class="btn btn-sm btn-outline-primary ms-auto">Buka →</a>
+      </div>
+      <div class="card-body" style="font-size:.85rem">
+        <p class="text-muted mb-2">Eksplorasi data mentah ISPU Jakarta:</p>
+        <ul class="mb-0" style="padding-left:1.2rem">
+          <li>Filter berdasarkan stasiun, tahun, dan kategori ISPU</li>
+          <li>Chart tren polutan harian (PM10, PM25, SO2, CO, O3, NO2)</li>
+          <li>Matriks korelasi antar polutan</li>
+          <li>Tabel data dengan paginasi (27.863 record)</li>
+          <li>Panduan warna kategori ISPU di bagian bawah</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="col-12">
+    <div class="card gs-form-card" style="border-left:4px solid #f59e0b">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div style="width:28px;height:28px;border-radius:50%;background:#f59e0b;color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0">3</div>
+        <h6 class="mb-0 fw-600">Upload Dataset <span class="badge bg-warning-subtle text-warning ms-1" style="font-size:.72rem">Opsional</span></h6>
+        <a href="{{ url_for('upload_dataset') }}" class="btn btn-sm btn-outline-warning ms-auto">Buka →</a>
+      </div>
+      <div class="card-body" style="font-size:.85rem">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="fw-500 mb-1">Kapan perlu upload dataset?</p>
+            <ul class="text-muted mb-0" style="padding-left:1.2rem">
+              <li>Jika kamu punya data ISPU yang lebih baru atau dari kota lain</li>
+              <li>Jika ingin melatih model dengan data custom untuk penelitian</li>
+              <li>Data upload akan otomatis menggantikan dataset bawaan</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <p class="fw-500 mb-1">Format yang diterima:</p>
+            <ul class="text-muted mb-0" style="padding-left:1.2rem">
+              <li>File CSV atau Excel (.xlsx)</li>
+              <li>Kolom wajib: <code>tanggal, stasiun, pm10, pm25, so2, co, o3, no2, max, categori</code></li>
+              <li>Ada tombol <strong>Reset ke Dataset Bawaan</strong> jika ingin kembali</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 — MAIN -->
+  <div class="col-12">
+    <div class="card gs-form-card" style="border-left:4px solid #7c3aed">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0">4</div>
+        <h6 class="mb-0 fw-600">Prediksi ISPU <span class="badge bg-danger-subtle text-danger ms-1" style="font-size:.72rem">Wajib sebelum Evaluasi</span></h6>
+        <a href="{{ url_for('prediksi') }}" class="btn btn-sm btn-outline-danger ms-auto">Buka →</a>
+      </div>
+      <div class="card-body" style="font-size:.85rem">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background:#7c3aed10;border:1px solid #7c3aed30">
+              <div class="fw-600 mb-2" style="color:#7c3aed"><i class="ti ti-settings me-1"></i>Langkah 1 — Konfigurasi Model</div>
+              <ol class="mb-0 text-muted" style="padding-left:1.1rem">
+                <li>Pilih stasiun pemantau (atau "Semua Stasiun")</li>
+                <li>Pilih mode: <strong>Regresi</strong> atau <strong>Klasifikasi</strong></li>
+                <li>Atur arsitektur: jumlah neuron H1, H2, H3</li>
+                <li>Sesuaikan epochs, learning rate, dropout, batch size</li>
+                <li>Klik <strong>"Mulai Latih Model"</strong></li>
+              </ol>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background:#1fa97a10;border:1px solid #1fa97a30">
+              <div class="fw-600 mb-2" style="color:#1fa97a"><i class="ti ti-chart-line me-1"></i>Langkah 2 — Lihat Hasil Training</div>
+              <ul class="mb-0 text-muted" style="padding-left:1.1rem">
+                <li>Kurva loss per epoch muncul otomatis</li>
+                <li>Grafik aktual vs prediksi (mode regresi)</li>
+                <li>Akurasi per epoch (mode klasifikasi)</li>
+                <li>Training log real-time di panel kiri</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background:#ea580c10;border:1px solid #ea580c30">
+              <div class="fw-600 mb-2" style="color:#ea580c"><i class="ti ti-wand me-1"></i>Langkah 3 — Prediksi Data Baru</div>
+              <ul class="mb-0 text-muted" style="padding-left:1.1rem">
+                <li>Isi nilai polutan (PM10, PM25, SO2, CO, O3, NO2)</li>
+                <li>Pilih bulan & hari untuk konteks musiman</li>
+                <li>Klik <strong>"Prediksi Sekarang"</strong></li>
+                <li>Hasil muncul: nilai ISPU + kategori + warna</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="col-md-6">
+    <div class="card gs-form-card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div style="width:28px;height:28px;border-radius:50%;background:#ea580c;color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0">5</div>
+        <h6 class="mb-0 fw-600">Evaluasi Model</h6>
+        <a href="{{ url_for('evaluasi') }}" class="btn btn-sm btn-outline-danger ms-auto">Buka →</a>
+      </div>
+      <div class="card-body" style="font-size:.85rem">
+        <div class="alert alert-warning py-2 px-3 mb-2" style="font-size:.8rem">
+          <i class="ti ti-alert-triangle me-1"></i>
+          <strong>Syarat:</strong> Model harus sudah dilatih di halaman Prediksi ISPU terlebih dahulu.
+        </div>
+        <ul class="mb-0" style="padding-left:1.2rem">
+          <li>Pilih stasiun dan mode (regresi/klasifikasi)</li>
+          <li>Klik "Tampilkan Evaluasi"</li>
+          <li>Lihat metrik: MSE, RMSE, MAE, R² (regresi) atau Accuracy (klasifikasi)</li>
+          <li>Kurva training & validation loss</li>
+          <li>Grafik aktual vs prediksi atau confusion matrix</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode explanation -->
+  <div class="col-md-6">
+    <div class="card gs-form-card h-100">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-help-circle me-2 text-primary"></i>Regresi vs Klasifikasi — Apa Bedanya?</h6>
+      </div>
+      <div class="card-body" style="font-size:.85rem">
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="p-2 rounded-3 h-100" style="background:#e8f7f1;border:1px solid #9fe1cb">
+              <div class="fw-600 text-success mb-1"><i class="ti ti-chart-line me-1"></i>Mode Regresi</div>
+              <div class="text-muted" style="font-size:.8rem">
+                Output berupa <strong>angka ISPU numerik</strong>, contoh: <em>87.4</em><br>
+                Cocok untuk: memperkirakan seberapa buruk kualitas udara secara presisi<br>
+                Metrik: MSE, RMSE, MAE, R²
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded-3 h-100" style="background:#eff6ff;border:1px solid #b5d4f4">
+              <div class="fw-600 text-primary mb-1"><i class="ti ti-tag me-1"></i>Mode Klasifikasi</div>
+              <div class="text-muted" style="font-size:.8rem">
+                Output berupa <strong>kategori ISPU</strong>, contoh: <em>SEDANG</em> (87%)<br>
+                Cocok untuk: keputusan cepat apakah udara aman atau berbahaya<br>
+                Metrik: Accuracy, Confusion Matrix
+              </div>
+            </div>
+          </div>
+          <div class="col-12 mt-1">
+            <div class="p-2 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;font-size:.78rem">
+              <strong>Rekomendasi:</strong> Latih keduanya untuk mendapat analisis yang lebih lengkap. Model tersimpan terpisah berdasarkan stasiun + mode.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Prediksi vs Evaluasi — full width row ──────────────────────── -->
+<div class="card gs-form-card mb-3">
+  <div class="card-header">
+    <h6 class="mb-0 fw-600">
+      <i class="ti ti-help-circle me-2 text-primary"></i>Apa Bedanya Halaman Prediksi ISPU dan Evaluasi Model?
+    </h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-5">
+        <div class="p-3 rounded-3 h-100" style="background:#e8f7f1;border:1px solid #9fe1cb">
+          <div class="fw-600 mb-2 text-success d-flex align-items-center gap-2">
+            <i class="ti ti-chart-dots" style="font-size:1.1rem"></i>Halaman Prediksi ISPU
+          </div>
+          <ul class="mb-0 text-muted" style="padding-left:1.1rem;font-size:.83rem;line-height:1.7">
+            <li>Tempat <strong>melatih model</strong> ANN Backpropagation dari awal</li>
+            <li>Konfigurasikan arsitektur (neuron, dropout, learning rate)</li>
+            <li>Lihat kurva loss &amp; metrik saat training berlangsung</li>
+            <li>Masukkan data polutan → dapatkan <strong>prediksi ISPU baru</strong></li>
+            <li>Model tersimpan otomatis setelah selesai</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-2 d-flex align-items-center justify-content-center">
+        <div class="text-center text-muted" style="font-size:.82rem">
+          <i class="ti ti-arrow-right d-none d-md-block" style="font-size:2rem;opacity:.3"></i>
+          <div class="mt-1">latih dulu,<br>lalu evaluasi</div>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="p-3 rounded-3 h-100" style="background:#eff6ff;border:1px solid #bfdbfe">
+          <div class="fw-600 mb-2 text-primary d-flex align-items-center gap-2">
+            <i class="ti ti-chart-bar" style="font-size:1.1rem"></i>Halaman Evaluasi Model
+          </div>
+          <ul class="mb-0 text-muted" style="padding-left:1.1rem;font-size:.83rem;line-height:1.7">
+            <li>Analisis <strong>mendalam performa</strong> model yang sudah dilatih</li>
+            <li>Confusion matrix lengkap + akurasi per kategori ISPU</li>
+            <li>Grafik aktual vs prediksi pada data uji yang tersimpan</li>
+            <li>Perbandingan Train Loss vs Validation Loss secara detail</li>
+            <li>Dapat dibuka kapan saja selama model sudah dilatih</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 p-2 rounded-3 d-flex align-items-center gap-2" style="background:#fef9c3;border:1px solid #fde68a;font-size:.8rem">
+      <i class="ti ti-alert-triangle text-warning flex-shrink-0"></i>
+      <span><strong>Urutan yang benar:</strong>
+        Latih model di <a href="{{ url_for('prediksi') }}" class="fw-600 text-success">Prediksi ISPU</a>
+        <i class="ti ti-arrow-right mx-1 text-muted" style="font-size:.75rem"></i>
+        Gunakan untuk prediksi data baru
+        <i class="ti ti-arrow-right mx-1 text-muted" style="font-size:.75rem"></i>
+        Buka <a href="{{ url_for('evaluasi') }}" class="fw-600 text-primary">Evaluasi Model</a> untuk analisis performa lengkap
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ── FAQ ────────────────────────────────────────────────────────────── -->
+<div class="card gs-form-card">
+  <div class="card-header">
+    <h6 class="mb-0 fw-600"><i class="ti ti-help me-2 text-warning"></i>Pertanyaan Umum (FAQ)</h6>
+  </div>
+  <div class="card-body" style="font-size:.85rem">
+    <div class="row g-3">
+      {% set faqs = [
+        ('Mengapa training terasa lama?',
+         'Proses pelatihan ANN Backpropagation melibatkan ribuan iterasi kalkulasi matematika. Aplikasi sudah dioptimasi dengan subsampling 10.000 data dan pre-loading TensorFlow saat startup. Estimasi waktu: 10–25 detik tergantung arsitektur dan epochs.'),
+        ('Berapa epochs yang disarankan?',
+         'Default 100 epochs sudah cukup. Early Stopping otomatis menghentikan training jika model tidak berkembang setelah beberapa epoch (patience). Umumnya training selesai di 20–60 epoch.'),
+        ('Apa itu Early Stopping?',
+         'Teknik untuk menghentikan training otomatis ketika validation loss tidak membaik selama N epoch (patience). Mencegah overfitting dan menghemat waktu. Model terbaik sebelum overfitting akan disimpan (restore_best_weights=True).'),
+        ('Apakah model tersimpan permanen?',
+         'Ya, model tersimpan di folder /models sebagai file .keras, .pkl (scaler), dan .json (metadata). Model akan tetap ada meski browser ditutup, selama server berjalan di folder yang sama.'),
+        ('Bagaimana jika hasil prediksi tidak akurat?',
+         'Coba: (1) Naikkan jumlah neurons H1/H2/H3, (2) Naikkan epochs, (3) Turunkan learning rate ke 0.0001, (4) Turunkan dropout rate, (5) Latih ulang dengan dataset yang lebih lengkap.'),
+        ('Dataset upload gagal — apa yang salah?',
+         'Pastikan file CSV/Excel memiliki kolom: tanggal, stasiun, pm10, pm25, so2, co, o3, no2, max, categori. Format tanggal harus YYYY-MM-DD. Nilai polutan harus numerik, bukan teks.'),
+      ] %}
+      {% for q, a in faqs %}
+      <div class="col-md-6">
+        <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+          <div class="fw-600 mb-1" style="color:#1e293b"><i class="ti ti-question-mark me-1 text-warning"></i>{{ q }}</div>
+          <div class="text-muted">{{ a }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

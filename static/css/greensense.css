@@ -1,0 +1,203 @@
+/* ================================================================
+   greensense.css — Custom styles for GreenSense Jakarta
+   ANN Backpropagation Air Quality Prediction
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --gs-green      : #1fa97a;
+  --gs-green-light: #e8f7f1;
+  --gs-green-dark : #166f52;
+  --cat-baik       : #16a34a;
+  --cat-sedang     : #ca8a04;
+  --cat-tidak-sehat: #ea580c;
+  --cat-sangat     : #dc2626;
+  --cat-berbahaya  : #7c3aed;
+  --radius-card: 16px;
+  --shadow-card: 0 2px 16px rgba(0,0,0,.07);
+}
+
+body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* ── Brand ─────────────────────────────────────────────────────── */
+.gs-brand-text {
+  font-size: 1.15rem; font-weight: 700; letter-spacing: -.3px;
+  background: linear-gradient(135deg, var(--gs-green), #38bdf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gs-brand-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--gs-green), #38bdf8);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1.1rem; flex-shrink: 0;
+}
+
+/* ── Stat cards ────────────────────────────────────────────────── */
+.gs-stat-card {
+  border-radius: var(--radius-card); border: none;
+  box-shadow: var(--shadow-card);
+  transition: transform .2s, box-shadow .2s; overflow: hidden;
+}
+.gs-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
+.gs-stat-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+}
+
+/* ── ISPU Category badges ──────────────────────────────────────── */
+.badge-ispu {
+  font-size: .75rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px; letter-spacing: .3px;
+  display: inline-block;
+}
+.badge-baik        { background: #dcfce7; color: var(--cat-baik); }
+.badge-sedang      { background: #fef9c3; color: var(--cat-sedang); }
+.badge-tidak-sehat { background: #ffedd5; color: var(--cat-tidak-sehat); }
+.badge-sangat      { background: #fee2e2; color: var(--cat-sangat); }
+.badge-berbahaya   { background: #ede9fe; color: var(--cat-berbahaya); }
+
+/* ── Chart & form cards ────────────────────────────────────────── */
+.gs-chart-card, .gs-form-card {
+  border-radius: var(--radius-card); border: none; box-shadow: var(--shadow-card);
+}
+.gs-chart-card .card-header {
+  background: transparent; border-bottom: 1px solid rgba(0,0,0,.06);
+  padding: 1.1rem 1.4rem .8rem;
+}
+
+/* ── Prediction result box ──────────────────────────────────────── */
+.gs-result-box {
+  border-radius: var(--radius-card); border: 2px solid var(--gs-green);
+  background: var(--gs-green-light); padding: 2rem; text-align: center; transition: all .3s;
+}
+.gs-result-value {
+  font-size: 3.5rem; font-weight: 700; line-height: 1; color: var(--gs-green-dark);
+}
+.gs-result-label { font-size: .85rem; color: #64748b; margin-top: .3rem;
+  text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Probability bars ───────────────────────────────────────────── */
+.gs-prob-row { margin-bottom: .5rem; }
+.gs-prob-row .label { font-size: .8rem; font-weight: 500; width: 160px; }
+.gs-prob-row .bar   { flex: 1; height: 10px; border-radius: 10px; background: #e5e7eb; overflow: hidden; }
+.gs-prob-row .fill  { height: 100%; border-radius: 10px; background: var(--gs-green); transition: width .6s; }
+.gs-prob-row .pct   { font-size: .8rem; font-weight: 600; width: 42px; text-align: right; }
+
+/* ── Training log ───────────────────────────────────────────────── */
+#trainingLog {
+  background: #0f172a; color: #94a3b8;
+  border-radius: 10px; padding: 1rem;
+  font-family: 'Courier New', monospace; font-size: .8rem;
+  max-height: 220px; overflow-y: auto;
+}
+#trainingLog .log-success { color: #4ade80; }
+#trainingLog .log-warn    { color: #fbbf24; }
+#trainingLog .log-info    { color: #60a5fa; }
+
+/* ── Evaluation metric pill ─────────────────────────────────────── */
+.gs-metric-pill {
+  border-radius: 12px; padding: .6rem .8rem; text-align: center;
+  background: var(--gs-green-light);
+}
+.gs-metric-pill .val { font-size: 1.1rem; font-weight: 700; color: var(--gs-green-dark); line-height: 1.2; white-space: nowrap; }
+.gs-metric-pill .lbl { font-size: .7rem; color: #64748b;
+  text-transform: uppercase; letter-spacing: .5px; }
+
+/* Make all metric pills green regardless of content */
+.gs-metric-pill-blue { background: var(--gs-green-light) !important; }
+.gs-metric-pill-blue .val { color: var(--gs-green-dark) !important; }
+
+/* ── Range slider value display ─────────────────────────────────── */
+.gs-range-val { min-width: 48px; text-align: right; font-weight: 600; color: var(--gs-green-dark); }
+
+/* ── Page header ─────────────────────────────────────────────────── */
+.gs-page-header {
+  background: linear-gradient(135deg, var(--gs-green) 0%, #38bdf8 100%);
+  border-radius: var(--radius-card); color: #fff;
+  padding: 1.8rem 2rem; margin-bottom: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.gs-page-header::after {
+  content: ''; position: absolute; right: -30px; top: -30px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+}
+.gs-page-header h4 { font-weight: 700; margin: 0; }
+.gs-page-header p  { margin: .3rem 0 0; opacity: .85; font-size: .9rem; }
+
+/* ── Data table ──────────────────────────────────────────────────── */
+.gs-data-table th { font-size: .78rem; text-transform: uppercase;
+  letter-spacing: .4px; color: #64748b; font-weight: 600; }
+.gs-data-table td { font-size: .85rem; vertical-align: middle; }
+
+/* ── Loader overlay ──────────────────────────────────────────────── */
+#gsLoader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.45);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #fff; gap: 1rem;
+}
+#gsLoader .spinner-border { width: 3rem; height: 3rem; border-width: .3rem; color: var(--gs-green); }
+#gsLoader p { font-weight: 600; font-size: 1rem; margin: 0; }
+
+/* ── Tentang page ─────────────────────────────────────────────────── */
+.gs-about-hero {
+  background: linear-gradient(135deg, #0f4c35 0%, #1fa97a 50%, #38bdf8 100%);
+  border-radius: var(--radius-card); color: #fff; padding: 3rem 2rem; text-align: center;
+}
+.gs-about-hero h3 { color: #fff !important; }
+.gs-about-hero p  { color: rgba(255,255,255,.9) !important; }
+
+.gs-timeline { position: relative; padding-left: 2rem; }
+.gs-timeline::before {
+  content: ''; position: absolute; left: .65rem; top: 0; bottom: 0;
+  width: 2px; background: var(--gs-green-light);
+}
+.gs-timeline-item { position: relative; margin-bottom: 1.5rem; }
+.gs-timeline-item::before {
+  content: ''; position: absolute; left: -1.65rem; top: .3rem;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--gs-green); border: 2px solid #fff;
+  box-shadow: 0 0 0 3px var(--gs-green-light);
+}
+
+/* ── Info cards equal height fix ────────────────────────────────── */
+.gs-info-card-row .card { height: 100%; }
+.gs-info-card-row .card-body { display: flex; flex-direction: column; justify-content: space-between; }
+
+/* ── Correlation legend ──────────────────────────────────────────── */
+.corr-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: .75rem; }
+.corr-legend-item { display: flex; align-items: center; gap: 4px; }
+.corr-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Chart x-axis crowded label fix ─────────────────────────────── */
+.apexcharts-xaxis-label { font-size: 11px !important; }
+
+/* ── Metric pill inline for centered accuracy ───────────────────────── */
+.gs-metric-pill.d-inline-block {
+  min-width: 180px;
+}
+
+/* ── Interpretasi result box separator ──────────────────────────────── */
+.gs-result-box hr { border-color: rgba(0,0,0,.1); }
+
+/* ── Pollutant interpret panel ───────────────────────────────────────── */
+.card-footer { padding: .75rem 1.25rem; }
+
+/* ── ANN Architecture diagram ─────────────────────────────────────── */
+.ann-diagram { overflow-x: auto; }
+.ann-node {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .65rem; font-weight: 600; color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.ann-layer-label {
+  font-size: .7rem; font-weight: 600; text-align: center;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: #64748b; margin-bottom: .5rem;
+}

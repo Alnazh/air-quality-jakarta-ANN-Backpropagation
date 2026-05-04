@@ -1,0 +1,72 @@
+# ── Python ────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# ── Virtual Environment ────────────────────────────────────────────────
+venv/
+env/
+.env/
+.venv/
+ENV/
+
+# ── Environment Variables ──────────────────────────────────────────────
+.env
+.env.local
+.env.production
+*.env
+
+# ── Flask ──────────────────────────────────────────────────────────────
+instance/
+.webassets-cache
+flask_session/
+
+# ── TensorFlow / Keras — Model files (besar, jangan di-commit) ────────
+models/*.keras
+models/*.h5
+models/*.pkl
+models/*.json
+
+# ── Dataset upload sementara ───────────────────────────────────────────
+data/ispu_upload.csv
+
+# ── Jupyter Notebook ───────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── OS ─────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# ── IDE / Editor ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Logs ──────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Testing ───────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/

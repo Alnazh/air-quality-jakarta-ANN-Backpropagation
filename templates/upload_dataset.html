@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Upload Dataset{% endblock %}
+{% block breadcrumb %}Upload Dataset{% endblock %}
+
+{% block content %}
+<div class="gs-page-header">
+  <div class="d-flex align-items-center justify-content-between">
+    <div>
+      <h4><i class="ti ti-upload me-2"></i>Upload Dataset ISPU</h4>
+      <p>Gunakan dataset kustom (CSV/Excel) atau kembali ke dataset bawaan 2010–2025</p>
+    </div>
+    <a href="{{ url_for('dataset') }}" class="btn btn-outline-light btn-sm">
+      <i class="ti ti-database me-1"></i>Lihat Dataset
+    </a>
+  </div>
+</div>
+
+<!-- Status banner -->
+<div id="statusBanner" class="mb-3 alert {% if using_upload %}alert-warning{% else %}alert-success{% endif %} d-flex align-items-center gap-2">
+  {% if using_upload %}
+  <i class="ti ti-database-import flex-shrink-0" style="font-size:1.3rem"></i>
+  <div><strong>Dataset Kustom Aktif</strong> — Aplikasi menggunakan dataset yang kamu upload.
+    Klik <strong>"Kembali ke Dataset Bawaan"</strong> untuk kembali ke data ISPU Jakarta 2010–2025.</div>
+  {% else %}
+  <i class="ti ti-database flex-shrink-0" style="font-size:1.3rem"></i>
+  <div><strong>Dataset Bawaan Aktif</strong> — Menggunakan data ISPU Jakarta 2010–2025
+    (Kaggle + Satudata DKI · 27.863 record).</div>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+
+  <!-- ── KIRI: Upload & Reset ──────────────────────────────────────── -->
+  <div class="col-xl-6">
+
+    <!-- Upload card -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-file-upload me-2 text-success"></i>Upload Dataset Baru</h6>
+      </div>
+      <div class="card-body">
+        <!-- Drop zone -->
+        <div id="dropZone" class="rounded-3 text-center py-4 mb-3"
+             style="border:2px dashed #cbd5e1;background:#f8fafc;cursor:pointer;transition:all .2s"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="event.preventDefault();this.style.borderColor='#1fa97a';this.style.background='#e8f7f1'"
+             ondragleave="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'"
+             ondrop="handleDrop(event)">
+          <i class="ti ti-cloud-upload" style="font-size:2.5rem;color:#94a3b8"></i>
+          <div class="fw-600 mt-2 mb-1" style="color:#475569">Drag &amp; drop file di sini</div>
+          <div class="text-muted" style="font-size:.83rem">atau klik untuk pilih file</div>
+          <div class="mt-2">
+            <span class="badge bg-light text-dark border me-1">CSV</span>
+            <span class="badge bg-light text-dark border">XLSX / XLS</span>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" class="d-none" onchange="handleFileSelect(this)">
+
+        <!-- File info -->
+        <div id="filePreview" class="d-none mb-3 p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0">
+          <div class="d-flex align-items-center gap-2">
+            <i class="ti ti-file-check text-success" style="font-size:1.3rem"></i>
+            <div class="flex-grow-1">
+              <div class="fw-600" id="fileName" style="font-size:.88rem"></div>
+              <div class="text-muted" id="fileSize" style="font-size:.78rem"></div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="clearFile()"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+
+        <button class="btn btn-success w-100 mb-2" id="btnUpload" disabled>
+          <i class="ti ti-upload me-1"></i>Upload &amp; Gunakan Dataset Ini
+        </button>
+
+        <div id="uploadResult" class="d-none"></div>
+      </div>
+    </div>
+
+    <!-- Reset card -->
+    <div class="card gs-form-card mb-3" style="border-left:4px solid #f59e0b">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-refresh me-2 text-warning"></i>Kembali ke Dataset Bawaan</h6>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-3" style="font-size:.85rem">
+          Hapus dataset yang diupload dan kembali menggunakan data ISPU Jakarta 2010–2025
+          (27.863 record, 5 stasiun DKI).
+        </p>
+        <button class="btn btn-warning" id="btnReset" {% if not using_upload %}disabled{% endif %}>
+          <i class="ti ti-database me-1"></i>Kembali ke Dataset Bawaan
+        </button>
+        {% if not using_upload %}
+        <div class="text-muted mt-2" style="font-size:.8rem">
+          <i class="ti ti-info-circle me-1"></i>Tidak ada dataset upload yang aktif saat ini.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Format contoh -->
+    <div class="card gs-form-card">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-download me-2 text-warning"></i>Contoh Format &amp; Template</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive mb-2">
+          <table class="table table-sm table-bordered mb-0" style="font-size:.72rem">
+            <thead class="table-light">
+              <tr>
+                <th>tanggal</th><th>stasiun</th><th>pm10</th><th>pm25</th>
+                <th>so2</th><th>co</th><th>o3</th><th>no2</th><th>max</th><th>categori</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2024-01-01</td><td>DKI1</td><td>85.2</td><td>42.1</td>
+                <td>14.3</td><td>17.8</td><td>44.2</td><td>19.1</td><td>67.8</td><td>SEDANG</td>
+              </tr>
+              <tr>
+                <td>2024-01-02</td><td>DKI2</td><td>110.5</td><td>58.3</td>
+                <td>18.7</td><td>22.4</td><td>51.3</td><td>24.6</td><td>88.4</td><td>SEDANG</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn btn-sm btn-outline-warning w-100" onclick="downloadTemplate()">
+          <i class="ti ti-download me-1"></i>Download Template CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KANAN: Kolom wajib & tips ─────────────────────────────────── -->
+  <div class="col-xl-6">
+
+    <!-- Required columns -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-table me-2 text-primary"></i>Kolom Wajib Dataset</h6>
+      </div>
+      <div class="card-body p-0">
+        {% set cols = [
+          ('tanggal','Tanggal pengukuran','Format YYYY-MM-DD, contoh: 2024-03-15'),
+          ('stasiun','Nama stasiun pemantau','Teks bebas, contoh: DKI1 atau Bunderan HI'),
+          ('pm10','Partikulat ≤10 mikrometer','Nilai numerik dalam µg/m³'),
+          ('pm25','Partikulat ≤2.5 mikrometer','Nilai numerik dalam µg/m³'),
+          ('so2','Sulfur dioksida','Nilai numerik dalam µg/m³'),
+          ('co','Karbon monoksida','Nilai numerik dalam µg/m³'),
+          ('o3','Ozon troposfer','Nilai numerik dalam µg/m³'),
+          ('no2','Nitrogen dioksida','Nilai numerik dalam µg/m³'),
+          ('max','Nilai ISPU maksimum hari itu','Nilai numerik, contoh: 87.5'),
+          ('categori','Kategori kualitas udara','BAIK / SEDANG / TIDAK SEHAT / SANGAT TIDAK SEHAT / BERBAHAYA'),
+        ] %}
+        {% for col, desc, note in cols %}
+        <div class="d-flex align-items-start gap-3 px-3 py-2 border-bottom">
+          <code class="text-success fw-600 flex-shrink-0" style="min-width:80px;font-size:.82rem;margin-top:2px">{{ col }}</code>
+          <div>
+            <div style="font-size:.83rem;font-weight:500;color:#1e293b">{{ desc }}</div>
+            <div class="text-muted" style="font-size:.75rem">{{ note }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card gs-form-card">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-bulb me-2 text-warning"></i>Tips &amp; Keterangan</h6>
+      </div>
+      <div class="card-body" style="font-size:.83rem">
+        {% set tips = [
+          ('ti-calendar','Format tanggal','Gunakan YYYY-MM-DD. Contoh: 2024-03-15. Format lain akan dicoba diparse otomatis.'),
+          ('ti-letter-case','Nama kolom','Nama kolom tidak case-sensitive. Spasi dan tanda hubung diganti underscore otomatis.'),
+          ('ti-database-off','Nilai kosong','Baris dengan nilai kosong di kolom numerik utama akan dilewati otomatis.'),
+          ('ti-tag','Nilai kategori','Isi kolom categori: BAIK, SEDANG, TIDAK SEHAT, SANGAT TIDAK SEHAT, atau BERBAHAYA (huruf kapital).'),
+          ('ti-refresh','Setelah upload','Dataset langsung aktif di semua halaman. Refresh halaman Dataset untuk melihat data baru.'),
+          ('ti-alert-triangle','Perhatian','Mengupload dataset baru akan otomatis menggantikan dataset upload sebelumnya (jika ada).'),
+        ] %}
+        {% for icon, title, desc in tips %}
+        <div class="d-flex gap-2 mb-3">
+          <i class="ti {{ icon }} text-success flex-shrink-0" style="font-size:1rem;margin-top:2px"></i>
+          <div>
+            <span class="fw-500">{{ title }}: </span>
+            <span class="text-muted">{{ desc }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/upload_dataset.js') }}"></script>
+{% endblock %}

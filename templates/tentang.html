@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Tentang Aplikasi{% endblock %}
+{% block breadcrumb %}Tentang Aplikasi{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="gs-about-hero mb-4">
+  <div class="mb-3">
+    <div class="d-inline-flex align-items-center justify-content-center rounded-3 mb-3"
+         style="width:64px;height:64px;background:rgba(255,255,255,.2)">
+      <i class="ti ti-leaf" style="font-size:2rem;color:#fff"></i>
+    </div>
+  </div>
+  <h3 class="fw-700 mb-2">GreenSense Jakarta</h3>
+  <p class="mb-1" style="font-size:1rem">
+    Penerapan ANN Backpropagation untuk Prediksi Kualitas Udara (ISPU) di Jakarta
+  </p>
+  <p style="font-size:.85rem;opacity:.85;margin:0">
+    Tugas 7 — Kecerdasan Buatan · Teknik Informatika · Universitas Bale Bandung
+  </p>
+</div>
+
+<div class="row g-3">
+
+  <!-- ── LEFT ────────────────────────────────────────────────────────── -->
+  <div class="col-xl-8">
+
+    <!-- Deskripsi -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-info-circle me-2 text-success"></i>Deskripsi Aplikasi</h6>
+      </div>
+      <div class="card-body" style="font-size:.88rem;line-height:1.7">
+        <p>
+          <strong>GreenSense Jakarta</strong> adalah sistem prediksi kualitas udara berbasis web yang menggunakan
+          metode <strong>Artificial Neural Network (ANN) dengan algoritma Backpropagation</strong> untuk memprediksi
+          Indeks Standar Pencemar Udara (ISPU) di Jakarta.
+        </p>
+        <p>
+          Aplikasi ini dikembangkan sebagai implementasi Tugas 7 mata kuliah Kecerdasan Buatan. Model dilatih
+          menggunakan data historis ISPU Jakarta dari tahun <strong>2010 hingga 2025</strong> yang bersumber dari
+          Kaggle dan platform data terbuka Pemerintah DKI Jakarta.
+        </p>
+        <p class="mb-0">
+          Sistem mendukung dua mode prediksi: <em>regresi</em> (nilai ISPU numerik) dan
+          <em>klasifikasi</em> (kategori: BAIK / SEDANG / TIDAK SEHAT / SANGAT TIDAK SEHAT / BERBAHAYA),
+          disertai visualisasi kurva training, metrik evaluasi, dan analisis korelasi polutan.
+        </p>
+      </div>
+    </div>
+
+    <!-- Alur sistem -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-sitemap me-2 text-primary"></i>Alur Sistem ANN Backpropagation</h6>
+      </div>
+      <div class="card-body">
+        <div class="gs-timeline">
+          {% set steps = [
+            ('Input Data Polutan','PM10, PM25, SO2, CO, O3, NO2 + fitur waktu (bulan, hari, musim kering)','text-primary','ti-database-import'),
+            ('Preprocessing','Cleaning data, feature engineering, normalisasi MinMaxScaler, train-test split 80:20','text-warning','ti-adjustments-horizontal'),
+            ('Arsitektur ANN','Input(9) → Dense(H1, ReLU) → BatchNorm → Dropout → Dense(H2, ReLU) → Dense(H3, ReLU) → Output','text-success','ti-git-merge'),
+            ('Forward Propagation','Data masukan melewati setiap layer — bobot × input + bias → fungsi aktivasi ReLU','text-success','ti-arrow-right'),
+            ('Hitung Loss','MSE untuk regresi · Sparse Categorical Crossentropy untuk klasifikasi','text-danger','ti-math-function'),
+            ('Backward Propagation','Gradient dihitung via chain rule, bobot diperbarui dengan Adam optimizer','text-danger','ti-arrow-left'),
+            ('Early Stopping','Training berhenti otomatis jika val_loss tidak membaik selama N epoch (patience)','text-muted','ti-player-stop'),
+            ('Hasil Prediksi','Output dikembalikan ke skala asli (inverse transform), kategori ISPU ditampilkan','text-success','ti-check'),
+          ] %}
+          {% for title, desc, clr, icon in steps %}
+          <div class="gs-timeline-item">
+            <div class="fw-600 {{ clr }}" style="font-size:.88rem">
+              <i class="ti {{ icon }} me-1"></i>{{ title }}
+            </div>
+            <div class="text-muted" style="font-size:.8rem">{{ desc }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Dataset -->
+    <div class="card gs-form-card">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-database me-2 text-warning"></i>Sumber Dataset</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 h-100" style="background:#f8fafc;border:1px solid #e2e8f0">
+              <div class="fw-600 mb-1" style="color:#1fa97a"><i class="ti ti-database me-1"></i>Kaggle Dataset (2010–2021)</div>
+              <div style="font-size:.82rem;color:#475569" class="mb-2">
+                <strong>senadu34/air-quality-index-in-jakarta-2010-2021</strong><br>
+                Data ISPU per stasiun DKI — PM10, PM25, SO2, CO, O3, NO2
+              </div>
+              <a href="https://www.kaggle.com/datasets/senadu34/air-quality-index-in-jakarta-2010-2021"
+                 target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="ti ti-external-link me-1"></i>Buka di Kaggle
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 h-100" style="background:#f8fafc;border:1px solid #e2e8f0">
+              <div class="fw-600 mb-1" style="color:#2563eb"><i class="ti ti-map-pin me-1"></i>Satudata Jakarta (2022–2024)</div>
+              <div style="font-size:.82rem;color:#475569" class="mb-2">
+                Data perpanjangan dari platform data terbuka Pemerintah DKI Jakarta
+              </div>
+              <a href="https://satudata.jakarta.go.id" target="_blank" class="btn btn-sm btn-outline-primary">
+                <i class="ti ti-external-link me-1"></i>satudata.jakarta.go.id
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 h-100" style="background:#fff9e6;border:1px solid #fcd34d">
+              <div class="fw-600 mb-1" style="color:#92400e"><i class="ti ti-activity me-1"></i>Silika DLH DKI (2025–2026)</div>
+              <div style="font-size:.82rem;color:#475569" class="mb-2">
+                Data ISPU real-time dari Dinas Lingkungan Hidup DKI Jakarta — update harian hingga 2026
+              </div>
+              <a href="https://silika.jakarta.go.id/udara/ispu24" target="_blank" class="btn btn-sm btn-outline-warning">
+                <i class="ti ti-external-link me-1"></i>silika.jakarta.go.id
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 h-100" style="background:#e8f7f1;border:1px solid #9fe1cb">
+              <div class="fw-600 mb-1 text-success"><i class="ti ti-stack me-1"></i>Dataset Gabungan (Final)</div>
+              <div class="row g-1" style="font-size:.82rem">
+                <div class="col-6"><span class="text-muted">Total Record:</span> <strong>27.863</strong></div>
+                <div class="col-6"><span class="text-muted">Rentang:</span> <strong>2010–2025</strong></div>
+                <div class="col-6"><span class="text-muted">Stasiun:</span> <strong>5 stasiun DKI</strong></div>
+                <div class="col-6"><span class="text-muted">Fitur Input:</span> <strong>9 fitur</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT ────────────────────────────────────────────────────────── -->
+  <div class="col-xl-4">
+
+    <!-- Tech stack -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-code me-2"></i>Teknologi yang Digunakan</h6>
+      </div>
+      <div class="card-body p-0">
+        {% set techs = [
+          ('Python 3.x','Bahasa pemrograman utama','ti-brand-python','#3b82f6'),
+          ('Flask','Web framework backend','ti-server','#22c55e'),
+          ('TensorFlow / Keras','Library ANN Backpropagation','ti-atom','#f59e0b'),
+          ('Pandas & NumPy','Manipulasi & preprocessing data','ti-table','#8b5cf6'),
+          ('Scikit-learn','Normalisasi & metrik evaluasi','ti-report-analytics','#ec4899'),
+          ('Bootstrap 5','Template UI responsif','ti-layout','#06b6d4'),
+          ('ApexCharts','Visualisasi grafik interaktif','ti-chart-line','#10b981'),
+        ] %}
+        {% for name, desc, icon, color in techs %}
+        <div class="d-flex align-items-center gap-3 px-3 py-2 border-bottom">
+          <div style="width:36px;height:36px;border-radius:10px;
+                      background:{{ color }}20;flex-shrink:0;
+                      display:flex;align-items:center;justify-content:center">
+            <i class="ti {{ icon }}" style="color:{{ color }};font-size:1.1rem"></i>
+          </div>
+          <div>
+            <div class="fw-500" style="font-size:.85rem">{{ name }}</div>
+            <div class="text-muted" style="font-size:.75rem">{{ desc }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Fitur Aplikasi -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-award me-2 text-warning"></i>Fitur Aplikasi</h6>
+      </div>
+      <div class="card-body p-0">
+        {% set features = [
+          ('Dashboard interaktif','4 chart visualisasi + statistik kualitas udara','ti-dashboard','#1fa97a'),
+          ('Eksplorasi Dataset','Filter, paginasi, korelasi polutan, 27K+ data','ti-database','#2563eb'),
+          ('Pelatihan Model ANN','Konfigurasi arsitektur, hyperparameter, early stopping','ti-chart-dots','#7c3aed'),
+          ('Dual Mode Prediksi','Regresi (nilai ISPU) dan Klasifikasi (kategori)','ti-wand','#f59e0b'),
+          ('Evaluasi Lengkap','MSE, RMSE, MAE, R², Confusion Matrix, kurva loss','ti-report-analytics','#ec4899'),
+        ] %}
+        {% for title, desc, icon, color in features %}
+        <div class="d-flex align-items-center gap-3 px-3 py-2 border-bottom">
+          <div style="width:32px;height:32px;border-radius:8px;
+                      background:{{ color }}20;flex-shrink:0;
+                      display:flex;align-items:center;justify-content:center">
+            <i class="ti {{ icon }}" style="color:{{ color }};font-size:.95rem"></i>
+          </div>
+          <div>
+            <div class="fw-500" style="font-size:.83rem">{{ title }}</div>
+            <div class="text-muted" style="font-size:.74rem">{{ desc }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Referensi -->
+    <div class="card gs-form-card">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-book me-2"></i>Referensi</h6>
+      </div>
+      <div class="card-body p-0">
+        {% set refs = [
+          ('Kaggle ISPU Jakarta 2010–2021','senadu34','https://www.kaggle.com/datasets/senadu34/air-quality-index-in-jakarta-2010-2021'),
+          ('Satudata Jakarta','satudata.jakarta.go.id','https://satudata.jakarta.go.id'),
+          ('Silika DLH DKI — ISPU live 2025–2026','silika.jakarta.go.id','https://silika.jakarta.go.id/udara/ispu24'),
+          ('TensorFlow / Keras Docs','tensorflow.org','https://www.tensorflow.org/api_docs/python/tf/keras'),
+          ('Modul Praktikum KA Bab 7','Backpropagation Model 2024','#'),
+        ] %}
+        {% for title, src, url in refs %}
+        <div class="px-3 py-2 border-bottom">
+          <div class="fw-500" style="font-size:.8rem">{{ title }}</div>
+          <a href="{{ url }}" target="{{ '_blank' if url != '#' else '_self' }}"
+             class="text-muted" style="font-size:.75rem">{{ src }}</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

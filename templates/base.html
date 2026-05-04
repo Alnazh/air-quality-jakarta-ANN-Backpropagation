@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{% block title %}GreenSense{% endblock %} | ISPU Jakarta</title>
+  <link rel="icon" href="{{ url_for('static', filename='assets/images/favicon.svg') }}" type="image/x-icon">
+
+  <!-- Mantis: Fonts & Icons -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/fonts/tabler-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/fonts/feather.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/fonts/fontawesome.css') }}">
+
+  <!-- Mantis: Core CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style-preset.css') }}">
+
+  <!-- GreenSense: Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/greensense.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+
+<!-- Pre-loader -->
+<div class="loader-bg">
+  <div class="loader-track"><div class="loader-fill"></div></div>
+</div>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="{{ url_for('dashboard') }}" class="b-brand text-primary d-flex align-items-center gap-2 text-decoration-none">
+        <div class="gs-brand-icon"><i class="ti ti-leaf"></i></div>
+        <span class="gs-brand-text">GreenSense</span>
+      </a>
+    </div>
+
+    <!-- navbar-content has built-in scroll via Mantis style.css -->
+    <div class="navbar-content">
+      <ul class="pc-navbar">
+        <li class="pc-item pc-caption"><label>Menu Utama</label></li>
+
+        <li class="pc-item {% if page == 'dashboard' %}active{% endif %}">
+          <a href="{{ url_for('dashboard') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+            <span class="pc-mtext">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="pc-item {% if page == 'dataset' %}active{% endif %}">
+          <a href="{{ url_for('dataset') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-database"></i></span>
+            <span class="pc-mtext">Dataset ISPU</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption"><label>Model ANN</label></li>
+
+        <li class="pc-item {% if page == 'prediksi' %}active{% endif %}">
+          <a href="{{ url_for('prediksi') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-chart-dots"></i></span>
+            <span class="pc-mtext">Prediksi ISPU</span>
+          </a>
+        </li>
+
+        <li class="pc-item {% if page == 'evaluasi' %}active{% endif %}">
+          <a href="{{ url_for('evaluasi') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+            <span class="pc-mtext">Evaluasi Model</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption"><label>Informasi</label></li>
+
+        <li class="pc-item {% if page == 'panduan' %}active{% endif %}">
+          <a href="{{ url_for('panduan') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-book"></i></span>
+            <span class="pc-mtext">Panduan Penggunaan</span>
+          </a>
+        </li>
+
+        <li class="pc-item {% if page == 'tentang' %}active{% endif %}">
+          <a href="{{ url_for('tentang') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-info-circle"></i></span>
+            <span class="pc-mtext">Tentang Aplikasi</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption"><label>Dataset</label></li>
+
+        <li class="pc-item {% if page == 'upload' %}active{% endif %}">
+          <a href="{{ url_for('upload_dataset') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-upload"></i></span>
+            <span class="pc-mtext">Upload Dataset</span>
+          </a>
+        </li>
+      </ul>
+    </div><!-- /navbar-content -->
+  </div>
+</nav>
+
+<!-- ══ HEADER ═══════════════════════════════════════════════════════════ -->
+<header class="pc-header">
+  <div class="header-wrapper">
+    <!-- Sidebar toggle: #sidebar-hide → adds .pc-sidebar-hide (desktop)
+         #mobile-collapse → adds .mob-sidebar-active (mobile < 1024px) -->
+    <div class="me-auto pc-mob-drp">
+      <ul class="list-unstyled">
+        <li class="pc-h-item pc-sidebar-collapse">
+          <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+            <i class="ti ti-menu-2"></i>
+          </a>
+        </li>
+        <li class="pc-h-item d-flex d-xl-none">
+          <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+            <i class="ti ti-menu-2"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="d-none d-md-flex align-items-center gap-2">
+      <i class="ti ti-leaf text-success"></i>
+      <small class="text-muted">GreenSense Jakarta</small>
+      <small class="text-muted">/</small>
+      <small class="fw-500">{% block breadcrumb %}Halaman{% endblock %}</small>
+    </div>
+
+    <div class="ms-auto">
+      <ul class="list-unstyled d-flex align-items-center gap-3 mb-0">
+        <li class="pc-h-item d-none d-md-flex align-items-center">
+          <span class="badge bg-success-subtle text-success" style="font-size:.75rem">
+            <i class="ti ti-wifi me-1"></i>Live Data
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- ══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
+<div class="pc-container">
+  <div class="pc-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- ══ FOOTER — Mantis style ════════════════════════════════════════════ -->
+<footer class="pc-footer">
+  <div class="footer-wrapper container-fluid">
+    <div class="row">
+      <div class="col-sm my-1">
+        <p class="m-0">
+          <i class="ti ti-leaf text-success me-1"></i>
+          <strong>GreenSense Jakarta</strong> &copy; {{ now.year }} &mdash; ANN Backpropagation ISPU Prediction.
+        </p>
+      </div>
+      <div class="col-auto my-1">
+        <ul class="list-inline footer-link mb-0">
+          <li class="list-inline-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+          <li class="list-inline-item"><a href="{{ url_for('panduan') }}">Panduan</a></li>
+          <li class="list-inline-item"><a href="{{ url_for('tentang') }}">Tentang</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ SCRIPTS ═══════════════════════════════════════════════════════════ -->
+<script src="{{ url_for('static', filename='assets/js/plugins/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/pcoded.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/component.js') }}"></script>
+<script src="{{ url_for('static', filename='js/greensense.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

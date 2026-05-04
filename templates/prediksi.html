@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+{% block title %}Prediksi ISPU{% endblock %}
+{% block breadcrumb %}Prediksi ISPU{% endblock %}
+
+{% block content %}
+<div class="gs-page-header">
+  <div class="d-flex align-items-center justify-content-between">
+    <div>
+      <h4><i class="ti ti-chart-dots me-2"></i>Prediksi Kualitas Udara (ISPU)</h4>
+      <p>Latih model ANN Backpropagation, lalu masukkan data polutan untuk prediksi ISPU Jakarta</p>
+    </div>
+    <a href="{{ url_for('panduan') }}" class="btn btn-outline-light btn-sm">
+      <i class="ti ti-book me-1"></i>Panduan
+    </a>
+  </div>
+</div>
+
+<!-- ── Mode & Station row ─────────────────────────────────────────────── -->
+<div class="card gs-form-card mb-3">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-500 mb-1">Stasiun Pemantau</label>
+        <select class="form-select" id="trainStation">
+          <option value="all">Semua Stasiun (gabungan)</option>
+          {% for s in stations %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        </select>
+        <small class="text-muted" style="font-size:.75rem">
+          <i class="ti ti-info-circle me-1"></i>Model disimpan terpisah per stasiun &amp; mode
+        </small>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label fw-500 mb-1">Mode Prediksi — Pilih Salah Satu</label>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="d-block p-3 rounded-3 h-100" id="labelReg"
+                   style="border:2px solid #1fa97a;background:#f0fdf4;cursor:pointer">
+              <div class="d-flex align-items-start gap-2">
+                <input class="form-check-input mt-1 flex-shrink-0" type="radio"
+                       name="mode" id="modeReg" value="regression" checked>
+                <div>
+                  <div class="fw-600" style="color:#1fa97a">
+                    <i class="ti ti-chart-line me-1"></i>Regresi
+                  </div>
+                  <div class="text-muted" style="font-size:.78rem">
+                    Output: <strong>angka ISPU</strong>, contoh: 87.4<br>
+                    Metrik evaluasi: MSE, RMSE, MAE, R²
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <label class="d-block p-3 rounded-3 h-100" id="labelCls"
+                   style="border:2px solid #e2e8f0;background:#f8fafc;cursor:pointer">
+              <div class="d-flex align-items-start gap-2">
+                <input class="form-check-input mt-1 flex-shrink-0" type="radio"
+                       name="mode" id="modeCls" value="classification">
+                <div>
+                  <div class="fw-600" style="color:#2563eb">
+                    <i class="ti ti-tag me-1"></i>Klasifikasi
+                  </div>
+                  <div class="text-muted" style="font-size:.78rem">
+                    Output: <strong>kategori</strong> (BAIK / SEDANG / …)<br>
+                    Metrik evaluasi: Accuracy, Confusion Matrix
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- ── LEFT: Konfigurasi ─────────────────────────────────────────── -->
+  <div class="col-xl-5">
+    <div class="card gs-form-card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="mb-0 fw-600">
+          <i class="ti ti-settings me-2 text-success"></i>Konfigurasi Model ANN
+        </h6>
+        <span class="badge bg-warning-subtle text-warning" style="font-size:.72rem">
+          <i class="ti ti-clock me-1"></i>~10–25 detik
+        </span>
+      </div>
+      <div class="card-body">
+
+        <!-- Architecture -->
+        <div class="mb-3">
+          <label class="form-label fw-500 mb-2" style="font-size:.85rem">
+            Arsitektur Jaringan (Jumlah Neuron)
+          </label>
+          <div class="row g-2">
+            {% for lid, lmin, lmax, lstep, ldef, lshow, ltip in [
+              ('h1', 16, 256, 16, 64, 'h1Val', 'Layer tersembunyi pertama'),
+              ('h2', 8,  128,  8, 32, 'h2Val', 'Layer tersembunyi kedua'),
+              ('h3', 4,   64,  4, 16, 'h3Val', 'Layer tersembunyi ketiga'),
+            ] %}
+            <div class="col-4">
+              <label class="form-label mb-1" style="font-size:.75rem">
+                Layer {{ loop.index }}
+                <span class="text-muted d-none d-xl-inline">({{ ltip }})</span>
+              </label>
+              <div class="d-flex align-items-center gap-1">
+                <input type="range" class="form-range" id="{{ lid }}"
+                       min="{{ lmin }}" max="{{ lmax }}" step="{{ lstep }}"
+                       value="{{ ldef }}" data-show="{{ lshow }}">
+                <span class="gs-range-val" id="{{ lshow }}">{{ ldef }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <!-- Diagram arsitektur -->
+          <div class="mt-2 p-2 rounded-3 text-center" style="background:#f1f5f9;font-size:.73rem">
+            <span class="badge bg-secondary">Input (9 fitur)</span>
+            <i class="ti ti-arrow-right text-muted mx-1"></i>
+            <span class="badge bg-success" id="archH1Badge">64</span>
+            <i class="ti ti-arrow-right text-muted mx-1"></i>
+            <span class="badge bg-success" id="archH2Badge">32</span>
+            <i class="ti ti-arrow-right text-muted mx-1"></i>
+            <span class="badge bg-success" id="archH3Badge">16</span>
+            <i class="ti ti-arrow-right text-muted mx-1"></i>
+            <span class="badge bg-primary" id="archOutputBadge">Output (1)</span>
+          </div>
+          <div class="text-muted mt-1" style="font-size:.74rem">
+            <i class="ti ti-bulb me-1 text-warning"></i>
+            Lebih banyak neuron = model lebih kompleks, tapi bisa lebih lambat dan overfitting.
+          </div>
+          <!-- Live ANN diagram — updates saat slider berubah -->
+          <div id="annDiagramPrediksi" class="mt-2"></div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Hyperparameter -->
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label mb-1" style="font-size:.82rem">
+              Max Epochs
+              <span class="text-muted" style="font-size:.72rem">(iterasi training)</span>
+            </label>
+            <div class="d-flex align-items-center gap-1">
+              <input type="range" class="form-range" id="epochs"
+                     min="50" max="300" step="25" value="100" data-show="epochsVal">
+              <span class="gs-range-val" id="epochsVal">100</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label mb-1" style="font-size:.82rem">
+              Early Stopping
+              <span class="text-muted" style="font-size:.72rem">(stop otomatis)</span>
+            </label>
+            <div class="d-flex align-items-center gap-1">
+              <input type="range" class="form-range" id="patience"
+                     min="5" max="30" step="5" value="10" data-show="patienceVal">
+              <span class="gs-range-val" id="patienceVal">10</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label mb-1" style="font-size:.82rem">
+              Dropout
+              <span class="text-muted" style="font-size:.72rem">(cegah overfitting)</span>
+            </label>
+            <div class="d-flex align-items-center gap-1">
+              <input type="range" class="form-range" id="dropout"
+                     min="0.0" max="0.5" step="0.05" value="0.15" data-show="dropoutVal">
+              <span class="gs-range-val" id="dropoutVal">0.15</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label mb-1" style="font-size:.82rem">
+              Batch Size
+              <span class="text-muted" style="font-size:.72rem">(data per iterasi)</span>
+            </label>
+            <div class="d-flex align-items-center gap-1">
+              <input type="range" class="form-range" id="batchSize"
+                     min="32" max="256" step="32" value="128" data-show="batchVal">
+              <span class="gs-range-val" id="batchVal">128</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label mb-1" style="font-size:.82rem">
+            Learning Rate
+            <span class="text-muted" style="font-size:.72rem">(kecepatan belajar)</span>
+          </label>
+          <select class="form-select form-select-sm" id="lr">
+            <option value="0.01">0.01 — Belajar cepat, bisa tidak stabil</option>
+            <option value="0.001" selected>0.001 — Default, disarankan</option>
+            <option value="0.0001">0.0001 — Lambat tapi lebih presisi</option>
+          </select>
+        </div>
+
+        <div class="alert alert-info py-2 px-3 mb-3" style="font-size:.78rem">
+          <i class="ti ti-clock me-1"></i>
+          <strong>Estimasi:</strong> 10–25 detik. TensorFlow sudah dimuat saat startup
+          sehingga tidak ada delay tambahan.
+        </div>
+
+        <button class="btn btn-success w-100 mb-2" id="btnTrain">
+          <i class="ti ti-chart-dots me-1"></i>Mulai Latih Model
+        </button>
+
+        <!-- Progress bar -->
+        <div id="trainProgressWrap" class="d-none mb-2">
+          <div class="d-flex justify-content-between mb-1" style="font-size:.78rem">
+            <span class="text-muted">Training berlangsung…</span>
+            <span id="trainProgressPct" class="fw-500 text-success">0%</span>
+          </div>
+          <div class="progress" style="height:6px">
+            <div id="trainProgressBar" class="progress-bar bg-success"
+                 style="width:0%;transition:width .3s"></div>
+          </div>
+        </div>
+
+        <!-- Log -->
+        <label class="form-label mb-1 mt-1"
+               style="font-size:.74rem;text-transform:uppercase;letter-spacing:.5px">
+          Training Log
+        </label>
+        <div id="trainingLog"><span class="text-muted">Siap untuk melatih model…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Hasil training ─────────────────────────────────────── -->
+  <div class="col-xl-7">
+
+    <!-- Placeholder -->
+    <div id="trainPlaceholder">
+      <div class="card gs-chart-card">
+        <div class="card-body text-center py-5">
+          <i class="ti ti-chart-dots text-muted" style="font-size:3rem;opacity:.2"></i>
+          <p class="text-muted mt-3 mb-1 fw-500">Klik "Mulai Latih Model" di panel kiri</p>
+          <p class="text-muted mb-0" style="font-size:.83rem">
+            Kurva loss, metrik evaluasi, dan grafik prediksi akan tampil di sini
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hasil (muncul setelah training) -->
+    <div id="trainResultSection" class="d-none">
+
+      <!-- Metrik ringkas -->
+      <div class="card gs-form-card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-award me-2 text-warning"></i>Hasil Evaluasi Training
+          </h6>
+        </div>
+        <div class="card-body"><div id="trainMetricsBox"></div></div>
+        <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+          <i class="ti ti-info-circle me-1 text-primary"></i>
+          <strong>R² Score</strong> mendekati 1.0 = model sangat akurat. &nbsp;
+          <strong>RMSE</strong> = rata-rata meleset ±N poin ISPU dari nilai asli. &nbsp;
+          <strong>Accuracy</strong> = persentase kategori yang berhasil diprediksi benar.
+        </div>
+      </div>
+
+      <!-- Kurva loss -->
+      <div class="card gs-chart-card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-chart-line me-2 text-warning"></i>Kurva Loss per Epoch
+          </h6>
+        </div>
+        <div class="card-body"><div id="chartLoss"></div></div>
+        <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+          <i class="ti ti-info-circle me-1 text-warning"></i>
+          <strong>Loss yang baik:</strong> kedua garis turun bersamaan dan stabil di angka rendah.
+          Jika <span style="color:#1fa97a">Train Loss</span> jauh lebih rendah dari
+          <span style="color:#f59e0b">Val Loss</span>, terjadi <em>overfitting</em> —
+          coba turunkan neurons atau naikkan dropout.
+          Garis merah vertikal menandai epoch di mana training berhenti otomatis.
+        </div>
+      </div>
+
+      <!-- Akurasi (hanya klasifikasi) -->
+      <div class="card gs-chart-card mb-3 d-none" id="accuracySection">
+        <div class="card-header">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-chart-area me-2 text-primary"></i>Kurva Akurasi per Epoch
+          </h6>
+        </div>
+        <div class="card-body"><div id="chartAccuracy"></div></div>
+        <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+          <i class="ti ti-info-circle me-1 text-primary"></i>
+          Semakin tinggi dan stabil kurva akurasi validasi, semakin handal model dalam
+          mengklasifikasikan kategori ISPU yang belum pernah dilihat sebelumnya.
+        </div>
+      </div>
+
+      <!-- Aktual vs Prediksi (hanya regresi) -->
+      <div class="card gs-chart-card mb-3" id="samplePredSection">
+        <div class="card-header">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-chart-dots me-2 text-success"></i>Aktual vs Prediksi (30 Sampel Uji)
+          </h6>
+        </div>
+        <div class="card-body"><div id="chartSamplePred"></div></div>
+        <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+          <i class="ti ti-info-circle me-1 text-success"></i>
+          Grafik ini membandingkan nilai ISPU <span style="color:#1fa97a">aktual</span>
+          (dari data uji) vs <span style="color:#f59e0b">prediksi</span> model.
+          Semakin dekat kedua garis, semakin akurat model.
+        </div>
+      </div>
+
+      <!-- Confusion matrix ringkas (hanya klasifikasi) -->
+      <div class="card gs-chart-card mb-3 d-none" id="cmSection">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-grid-dots me-2" style="color:#7c3aed"></i>Confusion Matrix
+          </h6>
+          <a href="{{ url_for('evaluasi') }}" class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">
+            <i class="ti ti-chart-bar me-1"></i>Evaluasi Lengkap
+          </a>
+        </div>
+        <div class="card-body"><div id="trainConfusion"></div></div>
+        <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+          <i class="ti ti-info-circle me-1" style="color:#7c3aed"></i>
+          <span style="background:#1fa97a;color:#fff;padding:1px 5px;border-radius:3px">Hijau</span> = prediksi benar (diagonal).
+          <span style="background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px">Merah</span> = salah.
+          Buka halaman Evaluasi Model untuk analisis lebih mendalam.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Form Prediksi ──────────────────────────────────────────────────── -->
+<div class="card gs-form-card mt-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h6 class="mb-0 fw-600">
+      <i class="ti ti-wand me-2 text-primary"></i>Form Prediksi — Masukkan Data Polutan
+    </h6>
+    <small class="text-muted">Pastikan model sudah dilatih sebelum prediksi</small>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-500">Stasiun (model yang digunakan)</label>
+        <select class="form-select" id="predStation">
+          <option value="all">Semua Stasiun</option>
+          {% for s in stations %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-500">Bulan</label>
+        <select class="form-select" id="predBulan">
+          {% set months = ['Januari','Februari','Maret','April','Mei','Juni',
+                           'Juli','Agustus','September','Oktober','November','Desember'] %}
+          {% for i, m in enumerate(months) %}
+          <option value="{{ i+1 }}" {% if i+1 == 6 %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-500">Hari</label>
+        <select class="form-select" id="predDay">
+          {% for i, d in enumerate(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']) %}
+          <option value="{{ i }}">{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <input type="hidden" id="predDrySeason" value="0">
+
+      <!-- Pollutant inputs -->
+      <div class="col-12">
+        <label class="form-label fw-500 mb-2">
+          Nilai Polutan Udara
+          <span class="text-muted fw-400" style="font-size:.82rem">(isi dari hasil pengukuran alat)</span>
+        </label>
+        <div class="row g-2">
+          {% set pollutants = [
+            ('predPm10','PM10','µg/m³',0,500,85,'Partikel kasar ≤10µm'),
+            ('predPm25','PM2.5','µg/m³',0,300,45,'Partikel halus ≤2.5µm'),
+            ('predSo2','SO₂','µg/m³',0,1000,15,'Sulfur dioksida'),
+            ('predCo','CO','µg/m³',0,150,18,'Karbon monoksida'),
+            ('predO3','O₃','µg/m³',0,300,45,'Ozon troposfer'),
+            ('predNo2','NO₂','µg/m³',0,400,20,'Nitrogen dioksida'),
+          ] %}
+          {% for pid, plabel, unit, pmin, pmax, pval, pdesc in pollutants %}
+          <div class="col-xl-2 col-md-4 col-6">
+            <label class="form-label mb-1 fw-500" style="font-size:.82rem">
+              {{ plabel }} <small class="text-muted">({{ unit }})</small>
+            </label>
+            <input type="number" class="form-control form-control-sm" id="{{ pid }}"
+                   min="{{ pmin }}" max="{{ pmax }}" value="{{ pval }}" step="0.1">
+            <small class="text-muted" style="font-size:.72rem">{{ pdesc }}</small>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-12 d-flex gap-2 align-items-center flex-wrap">
+        <button class="btn btn-primary" id="btnPredict">
+          <i class="ti ti-wand me-1"></i>Prediksi Sekarang
+        </button>
+        <button class="btn btn-outline-secondary" onclick="resetPredForm()">
+          <i class="ti ti-refresh me-1"></i>Reset Nilai
+        </button>
+        <small class="text-muted">
+          <i class="ti ti-bulb me-1 text-warning"></i>
+          Model harus sudah dilatih di atas. Gunakan stasiun &amp; mode yang sama.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hasil prediksi -->
+<div id="predResultBox" class="mt-3 d-none"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Sync arsitektur badges AND live diagram
+  function updateArchDiagram() {
+    const h1   = +document.getElementById('h1').value;
+    const h2   = +document.getElementById('h2').value;
+    const h3   = +document.getElementById('h3').value;
+    const mode = document.querySelector('input[name="mode"]:checked')?.value || 'regression';
+    if (window.renderANNDiagram) renderANNDiagram('annDiagramPrediksi', h1, h2, h3, mode);
+  }
+
+  ['h1','h2','h3'].forEach(id => {
+    const el    = document.getElementById(id);
+    const badge = document.getElementById('arch' + id.toUpperCase() + 'Badge');
+    if (el && badge) {
+      el.addEventListener('input', () => {
+        badge.textContent = el.value;
+        updateArchDiagram();
+      });
+    }
+  });
+
+  // Mode toggle — update label styles, output badge, diagram
+  document.querySelectorAll('input[name="mode"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const mode   = r.value;
+      const lReg   = document.getElementById('labelReg');
+      const lCls   = document.getElementById('labelCls');
+      const outBdg = document.getElementById('archOutputBadge');
+      lReg.style.borderColor = mode === 'regression'     ? '#1fa97a' : '#e2e8f0';
+      lReg.style.background  = mode === 'regression'     ? '#f0fdf4' : '#f8fafc';
+      lCls.style.borderColor = mode === 'classification' ? '#2563eb' : '#e2e8f0';
+      lCls.style.background  = mode === 'classification' ? '#eff6ff' : '#f8fafc';
+      if (outBdg) outBdg.textContent = mode === 'regression' ? 'Output (1)' : 'Output (5)';
+      updateArchDiagram();
+    });
+  });
+
+  // Initial render
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(updateArchDiagram, 100);
+  });
+
+  function resetPredForm() {
+    [['predPm10',85],['predPm25',45],['predSo2',15],
+     ['predCo',18],['predO3',45],['predNo2',20]].forEach(([id,val]) => {
+      const el = document.getElementById(id); if (el) el.value = val;
+    });
+    document.getElementById('predResultBox').classList.add('d-none');
+  }
+</script>
+<script src="{{ url_for('static', filename='js/prediksi.js') }}"></script>
+{% endblock %}

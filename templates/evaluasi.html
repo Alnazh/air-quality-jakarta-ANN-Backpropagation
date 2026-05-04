@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block title %}Evaluasi Model{% endblock %}
+{% block breadcrumb %}Evaluasi Model{% endblock %}
+
+{% block content %}
+<div class="gs-page-header">
+  <div>
+    <h4><i class="ti ti-chart-bar me-2"></i>Evaluasi Model ANN Backpropagation</h4>
+    <p>Analisis performa model: metrik evaluasi, kurva training, aktual vs prediksi, confusion matrix</p>
+  </div>
+</div>
+
+<!-- Warning: train first -->
+<div class="alert alert-warning d-flex gap-2 mb-3" style="font-size:.85rem">
+  <i class="ti ti-alert-triangle flex-shrink-0" style="font-size:1.2rem;margin-top:1px"></i>
+  <div>
+    <strong>Syarat:</strong> Latih model terlebih dahulu di halaman
+    <a href="{{ url_for('prediksi') }}" class="alert-link fw-600">Prediksi ISPU</a>
+    sebelum dapat melihat evaluasi di sini.
+    Model tersimpan otomatis dan bisa dievaluasi kapan saja selama server berjalan.
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- ── LEFT: Selector + Model list + Panduan metrik ──────────────── -->
+  <div class="col-xl-4">
+
+    <!-- Selector -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600">
+          <i class="ti ti-filter me-2 text-success"></i>Pilih Model
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label fw-500 mb-1">Stasiun</label>
+          <select class="form-select" id="evalStation">
+            <option value="all">Semua Stasiun</option>
+            {% for s in stations %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-500 mb-1">Mode Prediksi</label>
+          <select class="form-select" id="evalMode">
+            <option value="regression">Regresi (prediksi nilai ISPU)</option>
+            <option value="classification">Klasifikasi (prediksi kategori)</option>
+          </select>
+        </div>
+        <button class="btn btn-success w-100" id="btnLoadEval">
+          <i class="ti ti-chart-bar me-1"></i>Tampilkan Evaluasi
+        </button>
+      </div>
+    </div>
+
+    <!-- Model tersimpan -->
+    <div class="card gs-form-card mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="mb-0 fw-600"><i class="ti ti-list me-2"></i>Model Tersimpan</h6>
+        <span class="badge bg-success">{{ trained|length }}</span>
+      </div>
+      <div class="card-body p-0">
+        {% if trained %}
+        <div class="list-group list-group-flush">
+          {% for m in trained %}
+          <div class="list-group-item py-2 px-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="fw-500" style="font-size:.85rem">{{ m.station or 'all' }}</div>
+                <small>
+                  <span class="badge bg-success-subtle text-success">{{ m.mode }}</span>
+                  &nbsp;· {{ m.epochs_run or '—' }} epoch
+                </small>
+              </div>
+              {% if m.get('r2') %}
+              <span class="badge bg-light text-dark border" style="font-size:.72rem">R²={{ '%.3f'|format(m.r2) }}</span>
+              {% elif m.get('accuracy') %}
+              <span class="badge bg-light text-dark border" style="font-size:.72rem">Acc={{ '%.1f'|format(m.accuracy*100) }}%</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="ti ti-database-off" style="font-size:2rem;opacity:.3"></i>
+          <p class="mt-2 mb-0" style="font-size:.85rem">Belum ada model.<br>
+            Latih di <a href="{{ url_for('prediksi') }}">Prediksi ISPU</a>.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Panduan metrik -->
+    <div class="card gs-form-card">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-book me-2"></i>Panduan Membaca Metrik</h6>
+      </div>
+      <div class="card-body" style="font-size:.8rem">
+        {% set metrics = [
+          ('MSE','Mean Squared Error — kuadrat rata-rata selisih. Makin kecil makin baik. Sensitif terhadap nilai ekstrem.','text-success'),
+          ('RMSE','Root MSE — dalam satuan ISPU asli. Artinya: model rata-rata meleset ±nilai ini dari prediksi sebenarnya.','text-success'),
+          ('MAE','Mean Absolute Error — rata-rata selisih absolut. Lebih mudah dibaca daripada MSE.','text-success'),
+          ('R² Score','Nilai 0–1. R²=1 berarti sempurna. R²>0.9 sangat baik. R²>0.8 baik. R²<0.5 perlu perbaikan.','text-success'),
+          ('Accuracy','Persentase prediksi kategori yang tepat. >90% = sangat baik, >75% = baik, <60% = perlu ditingkatkan.','text-primary'),
+          ('Confusion Matrix','Tabel yang menunjukkan di mana model salah. Diagonal hijau = benar. Sel merah = salah prediksi.','text-primary'),
+        ] %}
+        {% for name, desc, clr in metrics %}
+        <div class="mb-2 pb-2 border-bottom">
+          <div class="fw-600 {{ clr }}">{{ name }}</div>
+          <div class="text-muted">{{ desc }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Hasil evaluasi ─────────────────────────────────────── -->
+  <div class="col-xl-8">
+
+    <!-- Placeholder -->
+    <div id="evalPlaceholder">
+      <div class="card gs-chart-card">
+        <div class="card-body text-center py-5">
+          <i class="ti ti-chart-bar text-muted" style="font-size:3.5rem;opacity:.2"></i>
+          <p class="text-muted mt-3 mb-2 fw-500">
+            Pilih model di panel kiri, klik <strong>"Tampilkan Evaluasi"</strong>
+          </p>
+          <p class="text-muted mb-0" style="font-size:.85rem">
+            Belum ada model? Latih dulu di halaman
+            <a href="{{ url_for('prediksi') }}" class="text-success fw-500">Prediksi ISPU</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hasil -->
+    <div id="evalResultSection" class="d-none">
+
+      <!-- Metrik -->
+      <div class="card gs-form-card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-award me-2 text-warning"></i>Metrik Evaluasi
+          </h6>
+        </div>
+        <div class="card-body"><div id="evalMetricsBox"></div></div>
+      </div>
+
+      <!-- Loss curve -->
+      <div class="card gs-chart-card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0 fw-600">
+            <i class="ti ti-chart-line me-2 text-warning"></i>Kurva Training &amp; Validation Loss
+          </h6>
+        </div>
+        <div class="card-body"><div id="evalChartLoss"></div></div>
+        <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+          <i class="ti ti-info-circle me-1 text-warning"></i>
+          <strong>Train Loss</strong> (hijau) = kesalahan di data training.
+          <strong>Val Loss</strong> (oranye putus-putus) = kesalahan di data uji.
+          Keduanya harus turun dan bertemu. Jika Val Loss naik sementara Train Loss turun, model
+          mulai <em>menghafal</em> data (overfitting). Garis merah = epoch terakhir sebelum training berhenti.
+        </div>
+      </div>
+
+      <!-- Regression: actual vs pred -->
+      <div id="evalRegressionSection" class="d-none">
+        <div class="card gs-chart-card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0 fw-600">
+              <i class="ti ti-chart-dots me-2 text-success"></i>Aktual vs Prediksi (Sampel Uji)
+            </h6>
+          </div>
+          <div class="card-body"><div id="evalChartSample"></div></div>
+          <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+            <i class="ti ti-info-circle me-1 text-success"></i>
+            Garis <span style="color:#2563eb">biru</span> = nilai ISPU sesungguhnya dari data uji.
+            Garis <span style="color:#dc2626">merah putus</span> = hasil prediksi model.
+            Semakin sering kedua garis berhimpit, semakin akurat model.
+          </div>
+        </div>
+      </div>
+
+      <!-- Classification: accuracy + confusion matrix -->
+      <div id="evalClassSection" class="d-none">
+        <!-- Accuracy chart -->
+        <div class="card gs-chart-card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0 fw-600">
+              <i class="ti ti-chart-area me-2 text-primary"></i>Kurva Akurasi per Epoch
+            </h6>
+          </div>
+          <div class="card-body"><div id="evalChartAccuracy"></div></div>
+          <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+            <i class="ti ti-info-circle me-1 text-primary"></i>
+            Grafik ini menunjukkan akurasi model selama training.
+            Idealnya kedua garis naik bersama dan stabil di angka tinggi.
+          </div>
+        </div>
+
+        <!-- Confusion matrix -->
+        <div class="card gs-chart-card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0 fw-600">
+              <i class="ti ti-grid-dots me-2" style="color:#7c3aed"></i>Confusion Matrix
+            </h6>
+          </div>
+          <div class="card-body">
+            <div id="evalConfusion"></div>
+          </div>
+          <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+            <div style="font-size:.78rem;color:#64748b" class="mb-2">
+              <i class="ti ti-info-circle me-1" style="color:#7c3aed"></i>
+              <strong>Cara membaca:</strong>
+              Baris = kategori <em>aktual</em> (kenyataan).
+              Kolom = kategori <em>prediksi</em> (hasil model).
+              <span style="background:#1fa97a;color:#fff;padding:1px 5px;border-radius:3px">Hijau diagonal</span> = prediksi benar.
+              <span style="background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px">Merah</span> = prediksi salah.
+              Angka besar di luar diagonal = kelemahan model.
+            </div>
+            <!-- Color legend -->
+            <div class="d-flex gap-3 flex-wrap" style="font-size:.75rem">
+              <div class="d-flex align-items-center gap-1">
+                <div style="width:16px;height:16px;border-radius:3px;background:rgba(31,169,122,.8)"></div>
+                <span>Prediksi benar (diagonal)</span>
+              </div>
+              <div class="d-flex align-items-center gap-1">
+                <div style="width:16px;height:16px;border-radius:3px;background:rgba(220,38,38,.5)"></div>
+                <span>Prediksi salah (off-diagonal)</span>
+              </div>
+              <div class="d-flex align-items-center gap-1">
+                <div style="width:16px;height:16px;border-radius:3px;background:#f1f5f9;border:1px solid #e2e8f0"></div>
+                <span>Nol (tidak terjadi)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/evaluasi.js') }}"></script>
+{% endblock %}

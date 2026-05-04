@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Dataset ISPU{% endblock %}
+{% block breadcrumb %}Dataset ISPU Jakarta{% endblock %}
+
+{% block content %}
+<div class="gs-page-header">
+  <div class="d-flex align-items-center justify-content-between">
+    <div>
+      <h4><i class="ti ti-database me-2"></i>Dataset ISPU Jakarta 2010–2025</h4>
+      <p>Sumber: Kaggle (senadu34) · Satudata Jakarta · 27.863 record · 5 Stasiun Pemantau</p>
+    </div>
+    <div class="d-none d-md-flex gap-2">
+      <span class="badge bg-light text-dark border"><i class="ti ti-file-csv me-1"></i>CSV</span>
+      <span class="badge bg-success text-white">2010–2025</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Filters ─────────────────────────────────────────────────────── -->
+<div class="card gs-chart-card mb-3">
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label mb-1 fw-500" style="font-size:.82rem">Stasiun Pemantau</label>
+        <select class="form-select form-select-sm" id="filterStation">
+          <option value="all">Semua Stasiun</option>
+          {% for s in stations %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1 fw-500" style="font-size:.82rem">Rentang Waktu Chart</label>
+        <select class="form-select form-select-sm" id="limitSelect">
+          <option value="90">90 hari terakhir</option>
+          <option value="180">180 hari terakhir</option>
+          <option value="365" selected>1 tahun terakhir</option>
+          <option value="730">2 tahun terakhir</option>
+          <option value="9999">Semua data</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label mb-1 fw-500" style="font-size:.82rem">Filter Tahun (Tabel)</label>
+        <select class="form-select form-select-sm" id="filterYear">
+          <option value="0">Semua Tahun</option>
+          {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1 fw-500" style="font-size:.82rem">Kategori ISPU (Tabel)</label>
+        <select class="form-select form-select-sm" id="filterCategory">
+          <option value="all">Semua Kategori</option>
+          <option value="BAIK">BAIK (0–50)</option>
+          <option value="SEDANG">SEDANG (51–100)</option>
+          <option value="TIDAK SEHAT">TIDAK SEHAT (101–199)</option>
+          <option value="SANGAT TIDAK SEHAT">SANGAT TIDAK SEHAT (200–299)</option>
+          <option value="BERBAHAYA">BERBAHAYA (&gt;300)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Time-series chart ─────────────────────────────────────────────── -->
+<div class="card gs-chart-card mb-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h6 class="mb-0 fw-600"><i class="ti ti-chart-line me-2 text-success"></i>Tren Polutan &amp; ISPU</h6>
+    <div class="d-flex gap-1 flex-wrap">
+      <span class="badge bg-success-subtle text-success" style="font-size:.72rem">ISPU</span>
+      <span class="badge bg-primary-subtle text-primary" style="font-size:.72rem">PM10</span>
+      <span class="badge" style="background:#ede9fe;color:#7c3aed;font-size:.72rem">PM25</span>
+      <span class="badge bg-warning-subtle text-warning" style="font-size:.72rem">O3</span>
+      <span class="badge bg-danger-subtle text-danger" style="font-size:.72rem">NO2</span>
+    </div>
+  </div>
+  <div class="card-body"><div id="chartPollutants"></div></div>
+  <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+    <div class="fw-500 mb-2" style="font-size:.8rem;color:#475569">
+      <i class="ti ti-activity me-1"></i>Rata-rata 30 hari terakhir — status tiap polutan:
+    </div>
+    <div id="pollutantInterpret">
+      <div class="text-muted" style="font-size:.8rem">Memuat data…</div>
+    </div>
+    <div class="mt-2 text-muted" style="font-size:.75rem">
+      <i class="ti ti-bulb me-1 text-warning"></i>
+      Grafik menunjukkan konsentrasi harian rata-rata semua stasiun. Gunakan filter di atas untuk melihat data per stasiun atau rentang waktu tertentu.
+    </div>
+  </div>
+</div>
+
+<!-- ── Charts row ────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-3">
+  <div class="col-xl-5">
+    <div class="card gs-chart-card h-100">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-chart-pie me-2 text-primary"></i>Distribusi Kategori ISPU</h6>
+      </div>
+      <div class="card-body"><div id="chartCatDonut"></div></div>
+      <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+        <i class="ti ti-info-circle me-1 text-primary"></i>
+        Grafik donut ini menunjukkan persentase hari dengan tiap kategori kualitas udara dari seluruh dataset.
+        Idealnya dominan <span class="text-success fw-500">BAIK</span> dan <span class="fw-500" style="color:#ca8a04">SEDANG</span>.
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-7">
+    <div class="card gs-chart-card h-100">
+      <div class="card-header">
+        <h6 class="mb-0 fw-600"><i class="ti ti-grid-dots me-2 text-warning"></i>Matriks Korelasi Antar Polutan</h6>
+      </div>
+      <div class="card-body">
+        <div id="correlationTable" class="table-responsive"></div>
+      </div>
+      <div class="card-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;font-size:.78rem;color:#64748b">
+        <i class="ti ti-info-circle me-1 text-warning"></i>
+        <strong>Cara membaca:</strong> Nilai mendekati <strong>1.0</strong> = kedua polutan naik bersamaan.
+        Nilai mendekati <strong>-1.0</strong> = satu naik, satu turun. Nilai mendekati <strong>0</strong> = tidak ada hubungan.
+        Contoh: PM10 &amp; PM25 biasanya berkorelasi tinggi karena berasal dari sumber yang sama.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Data table with sort ─────────────────────────────────────────── -->
+<div class="card gs-chart-card">
+  <div class="card-header">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h6 class="mb-0 fw-600"><i class="ti ti-table me-2"></i>Tabel Data ISPU Jakarta</h6>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Sort controls -->
+        <div class="d-flex align-items-center gap-1">
+          <label class="form-label mb-0 me-1" style="font-size:.78rem;white-space:nowrap">Urutkan:</label>
+          <select class="form-select form-select-sm" id="sortCol" style="width:auto;font-size:.78rem">
+            <option value="tanggal">Tanggal</option>
+            <option value="max">ISPU Maks</option>
+            <option value="pm10">PM10</option>
+            <option value="pm25">PM25</option>
+            <option value="o3">O3</option>
+            <option value="no2">NO2</option>
+          </select>
+          <button class="btn btn-sm btn-outline-secondary" id="btnSortDir" title="Klik untuk ubah arah urutan"
+                  style="font-size:.78rem;padding:3px 8px">
+            <i class="ti ti-sort-ascending" id="sortDirIcon"></i>
+            <span id="sortDirLabel">ASC</span>
+          </button>
+        </div>
+        <small class="text-muted" id="pageInfo" style="font-size:.78rem">—</small>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover gs-data-table mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="gs-th-sort" data-col="tanggal">Tanggal <i class="ti ti-selector ms-1" style="opacity:.4"></i></th>
+            <th>Stasiun</th>
+            <th class="gs-th-sort" data-col="pm10">PM10 <i class="ti ti-selector ms-1" style="opacity:.4"></i></th>
+            <th class="gs-th-sort" data-col="pm25">PM25 <i class="ti ti-selector ms-1" style="opacity:.4"></i></th>
+            <th>SO2</th><th>CO</th>
+            <th class="gs-th-sort" data-col="o3">O3 <i class="ti ti-selector ms-1" style="opacity:.4"></i></th>
+            <th class="gs-th-sort" data-col="no2">NO2 <i class="ti ti-selector ms-1" style="opacity:.4"></i></th>
+            <th class="gs-th-sort" data-col="max">ISPU Maks <i class="ti ti-selector ms-1" style="opacity:.4"></i></th>
+            <th>Polutan Kritis</th>
+            <th>Kategori</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="11" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2"></div>Memuat data…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer d-flex justify-content-between align-items-center">
+    <button class="btn btn-sm btn-outline-secondary" id="btnPrev">
+      <i class="ti ti-chevron-left"></i> Sebelumnya
+    </button>
+    <small class="text-muted" id="pageInfo2" style="font-size:.78rem"></small>
+    <button class="btn btn-sm btn-outline-secondary" id="btnNext">
+      Berikutnya <i class="ti ti-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- ── ISPU legend ─────────────────────────────────────────────────────── -->
+<div class="card gs-chart-card mt-3">
+  <div class="card-header">
+    <h6 class="mb-0 fw-600"><i class="ti ti-info-circle me-2"></i>Panduan Kategori ISPU</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-2">
+      {% set cats = [
+        ('BAIK','0 – 50','baik','Udara bersih, aman untuk semua aktivitas di luar ruangan.','ti-leaf'),
+        ('SEDANG','51 – 100','sedang','Cukup baik. Orang sensitif (asma, lansia) perlu sedikit waspada.','ti-sun'),
+        ('TIDAK SEHAT','101 – 199','tidak-sehat','Semua orang mulai merasakan dampak. Kurangi aktivitas luar, pakai masker.','ti-alert-triangle'),
+        ('SANGAT TIDAK SEHAT','200 – 299','sangat','Berbahaya bagi semua. Hindari keluar ruangan, gunakan masker N95.','ti-flame'),
+        ('BERBAHAYA','> 300','berbahaya','Darurat kesehatan! Tinggal di dalam, tutup ventilasi, hubungi pihak berwenang.','ti-biohazard'),
+      ] %}
+      {% for name, rng, css, desc, icon in cats %}
+      <div class="col-xl col-md-4">
+        <div class="p-3 rounded-3 h-100" style="background:#f8fafc">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <i class="ti {{ icon }} fs-5"></i>
+            <span class="badge-ispu badge-{{ css }}">{{ name }}</span>
+          </div>
+          <div class="fw-600 mb-1" style="font-size:.82rem">ISPU {{ rng }}</div>
+          <div class="text-muted" style="font-size:.78rem">{{ desc }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<style>
+.gs-th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+.gs-th-sort:hover { background: #f1f5f9; }
+.gs-th-sort.active { color: #1fa97a; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dataset.js') }}"></script>
+{% endblock %}
