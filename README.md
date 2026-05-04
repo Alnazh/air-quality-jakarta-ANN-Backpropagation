@@ -60,7 +60,7 @@ air_quality_jakarta/
 
 **1. Clone repository**
 ```bash
-git clone https://github.com/username/greensense-jakarta.git
+git clone https://github.com/Alnazh/greensense-jakarta.git
 cd greensense-jakarta
 ```
 
